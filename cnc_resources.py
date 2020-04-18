@@ -43,6 +43,7 @@ class UserVar:
 '''variables'''
 
 diameter = UserVar(float, 'diameter')
+drill_diameter = UserVar(float, 'drill diameter')
 surface_feet_min = UserVar(float, 'surface feet per minute')
 revolutions_min = UserVar(float, 'revolutions per minute')
 inches_flute = UserVar(float, 'feed per flute')
@@ -51,9 +52,11 @@ step_over = UserVar(float, 'step over')
 angle = UserVar(float, 'angle')
 pitch = UserVar(float, 'pitch')
 feed = UserVar(float, 'feed')
+feed_rate = UserVar(float, 'feed rate')
 inches = UserVar(float, 'Inches')
 millimeters = UserVar(float, 'Millimeters')
 radius = UserVar(float, 'radius')
+step_down = UserVar(float, 'step down')
 
 
 class Calculator:
@@ -72,13 +75,14 @@ class Calculator:
         return surface_feet_min.val
 
     @staticmethod
-    def feedrate():
+    def feed_rate():
         rpm = revolutions_min.value()
         ipt = inches_flute.value()
         num_flutes = flutes.value()
         feed_ = ipt * num_flutes
         feed.set(feed_)
-        return rpm * feed_
+        feed_rate.set(rpm * feed_)
+        return feed_rate.val
 
     @staticmethod
     def rct_ipt():
@@ -96,8 +100,15 @@ class Calculator:
         return feed.val
 
     @staticmethod
+    def mrr():
+        step_o = step_over.value()
+        step_d = step_down.value()
+        f = feed_rate.value()
+        return step_o * step_d * f
+
+    @staticmethod
     def drill_point():
-        dia = diameter.one_shot()
+        dia = diameter.value()
         a = angle.value()
         return (.5 * dia) / math.tan(.5 * math.radians(a))
 
@@ -113,7 +124,7 @@ class Calculator:
 
     @staticmethod
     def drill_feed():
-        dia = diameter.one_shot()
+        dia = diameter.value()
         return dia * .013
 
     @staticmethod
@@ -127,11 +138,13 @@ class Calculator:
 
     @staticmethod
     def tap_drill():
-        dia = diameter.one_shot()
+        dia = diameter.value()
         p = pitch.one_shot()
         if p > 5:
             p = 1 / p
-        return dia - p
+        drill_dia = dia - p
+        diameter.set(drill_dia)
+        return drill_dia
 
 
 class Logos:
