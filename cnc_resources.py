@@ -52,6 +52,9 @@ inches = UserVar(float, 'Inches')
 millimeters = UserVar(float, 'Millimeters')
 radius = UserVar(float, 'radius')
 step_down = UserVar(float, 'step down')
+total_length = UserVar(float, 'overall length \n(part to riser distance)')
+short_length = UserVar(float, 'distance from bolt to riser')
+force = UserVar(float, 'force applied from bolt')
 
 
 class Calculator:
@@ -87,7 +90,6 @@ class Calculator:
         v1 = (ipt * dia) / (2 * math.sqrt((dia * step_o) - (step_o * step_o)))
         v2 = (((dia / step_o)/2)/math.sqrt((dia/step_o)-1)) * ipt  # sandvik formula
         inches_flute.set(v2)
-
         return inches_flute.val
 
     @staticmethod
@@ -144,9 +146,15 @@ class Calculator:
         diameter.set(drill_dia)
         return drill_dia
 
+    @staticmethod
+    def clamping_force():
+        d1 = total_length.value(one_shot=True)
+        d2 = short_length.value(one_shot=True)
+        f = force.value(one_shot=True)
+        return (f * d2) / d1
+
 
 class Logos:
-
     logo = """
                    ▄████▄      ███▄    █     ▄████▄
                   ▒██▀ ▀█      ██ ▀█   █    ▒██▀ ▀█

@@ -73,6 +73,7 @@ menu = {
     10: ('Drill Feed', Calc.drill_feed),
     11: ('Serration Depth', Calc.serration_depth),
     12: ('Tap Drill Size', Calc.tap_drill),
+    13: ('Toe Clamp Force', Calc.clamping_force),
     99: ('Reset Variables', UserVar.reset),
     100: ('List Functions', show_menu),
     101: ('Kill', kill),
