@@ -5,39 +5,34 @@ class UserVar:
     all_vars = []
     invalid_input_string = 'invalid input - Value Error - Please try again'
 
+    @classmethod
+    def reset(cls):
+        for variable in cls.all_vars:
+            variable.val = None
+
     def __init__(self, var_type, user_text):
         self.var_type = var_type
         self.val = None
         self.user_text = user_text
         self.all_vars.append(self)
 
-    def value(self):
-        while self.val is None:
+    def value(self, one_shot=False):
+        x = self.val
+        if one_shot:
+            x = None
+        while x is None:
             try:
                 incoming = input(self.user_text + ': ')
-                self.val = self.var_type(incoming)
+                x = self.var_type(incoming)
             except ValueError:
                 print(UserVar.invalid_input_string)
                 pass
-        return self.val
-
-    def one_shot(self):
-        temp = None
-        while temp is None:
-            try:
-                temp = self.var_type(input(self.user_text + ': '))
-            except ValueError:
-                print(UserVar.invalid_input_string)
-                pass
-            return temp
+        if not one_shot:
+            self.val = x
+        return x
 
     def set(self, value):
         self.val = self.var_type(value)
-
-    @classmethod
-    def reset(cls):
-        for variable in cls.all_vars:
-            variable.val = None
 
 
 '''variables'''
@@ -89,7 +84,10 @@ class Calculator:
         ipt = inches_flute.value()
         dia = diameter.value()
         step_o = step_over.value()
-        inches_flute.set((ipt * dia) / (2 * math.sqrt((dia * step_o) - (step_o * step_o))))
+        v1 = (ipt * dia) / (2 * math.sqrt((dia * step_o) - (step_o * step_o)))
+        v2 = (((dia / step_o)/2)/math.sqrt((dia/step_o)-1)) * ipt  # sandvik formula
+        inches_flute.set(v2)
+
         return inches_flute.val
 
     @staticmethod
@@ -114,12 +112,12 @@ class Calculator:
 
     @staticmethod
     def mm():
-        mm_ = millimeters.one_shot()
+        mm_ = millimeters.value(one_shot=True)
         return mm_ / 25.4
 
     @staticmethod
     def inch():
-        inch_ = inches.one_shot()
+        inch_ = inches.value(one_shot=True)
         return inch_ * 25.4
 
     @staticmethod
@@ -129,8 +127,8 @@ class Calculator:
 
     @staticmethod
     def serration_depth():
-        rad = radius.one_shot()
-        p = pitch.one_shot()
+        rad = radius.value(one_shot=True)
+        p = pitch.value(one_shot=True)
         try:
             return rad - math.sqrt(rad ** 2 - (p / 2) ** 2)
         except ValueError:
@@ -139,7 +137,7 @@ class Calculator:
     @staticmethod
     def tap_drill():
         dia = diameter.value()
-        p = pitch.one_shot()
+        p = pitch.value(one_shot=True)
         if p > 5:
             p = 1 / p
         drill_dia = dia - p
