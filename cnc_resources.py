@@ -156,28 +156,22 @@ class Calculator:
 
     @staticmethod
     def string_to_float():
-        pattern = re.compile(r"(?P<feet>\d*')?(?P<inches>\d*?-?\d*?/?\d*?\")")
+        pattern = re.compile(r"((?P<feet>\d*)')?((?P<inches>\d*?)-?(?P<num>\d*?)/?(?P<denom>\d*?)\")")
         string = user_string.value(one_shot=True)
+        feet = 0
+        inches_ = 0
+        fraction = 0
+        found_match = re.finditer(pattern, string).__next__()
+        if found_match.group('feet'):
+            feet = float(found_match.group('feet'))
 
-        def decimal_feet(string_from_pattern):
-            if not string_from_pattern:
-                return 0
-            return float(float(string_from_pattern.replace("'", "")) * 12)
+        if found_match.group('inches'):
+            inches_ = float(found_match.group('inches'))
 
-        def decimal_inches(string_from_pattern):
-            if not string_from_pattern:
-                return 0
-            inches_ = string_from_pattern.replace("\"", "")
-            decimal = 0
-            if "-" in string_from_pattern:
-                inches_, fraction = string_from_pattern.split("-")
-                fraction = fraction.replace("\"", "")
-                num, den = fraction.split("/")
-                decimal = int(num) / int(den)
-            return int(inches_) + decimal
+        if found_match.group('num'):
+            fraction = float(found_match.group('num')) / float(found_match.group('denom'))
 
-        match = re.search(pattern, string)
-        return decimal_feet(match.group('feet')) + decimal_inches(match.group('inches'))
+        return (feet * 12) + inches_ + fraction
 
 
 class Logos:
