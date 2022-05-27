@@ -57,6 +57,8 @@ inches = UserVar(float, 'Inches')
 millimeters = UserVar(float, 'Millimeters')
 radius = UserVar(float, 'radius')
 step_down = UserVar(float, 'step down')
+inches_per_rev = UserVar(float, 'inches per revolution')
+surface_ra = UserVar(float, 'Surface RA')
 
 
 class Calculator:
@@ -138,13 +140,33 @@ class Calculator:
 
     @staticmethod
     def tap_drill():
-        dia = diameter.value()
+        dia = diameter.one_shot()
         p = pitch.one_shot()
         if p > 5:
             p = 1 / p
         drill_dia = dia - p
         diameter.set(drill_dia)
         return drill_dia
+
+    @staticmethod
+    def surface_ra():
+        rad = radius.one_shot()
+        step_o = inches_per_rev.one_shot()
+        ra = 1e7 * (rad - 0.5 * math.sqrt(4 * rad * rad - 0.159154 * 0.159154 * step_o * step_o))
+        return ra
+
+    @staticmethod
+    def ra_feed():
+        rad = radius.one_shot()
+        ra = surface_ra.one_shot()
+        return (2 * math.sqrt((ra / 1e7) * (2 * rad - ra / 1e7))) / 0.159154
+
+    @staticmethod
+    def ra_corner_radius():
+        ra = surface_ra.one_shot()
+        ipr = inches_per_rev.one_shot()
+        radius.val = (0.159154 * ipr * 0.159154 * ipr + (ra / 1e7) * 4 * (ra / 1e7)) / ((ra / 1e7) * 8)
+        return radius.val
 
 
 class Logos:
