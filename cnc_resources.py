@@ -56,6 +56,8 @@ total_length = UserVar(float, 'overall length \n(part to riser distance)')
 short_length = UserVar(float, 'distance from bolt to riser')
 force = UserVar(float, 'force applied from bolt')
 user_string = UserVar(str, "ex: 115\'16-7/8\" \nstring")
+inches_per_rev = UserVar(float, 'inches per revolution')
+surface_ra = UserVar(float, 'Surface RA')
 
 
 class Calculator:
@@ -139,8 +141,9 @@ class Calculator:
 
     @staticmethod
     def tap_drill():
-        dia = diameter.value()
-        p = pitch.value(one_shot=True)
+        dia = diameter.one_shot()
+        p = pitch.one_shot()
+
         if p > 5:
             p = 1 / p
         drill_dia = dia - p
@@ -153,6 +156,26 @@ class Calculator:
         d2 = short_length.value(one_shot=True)
         f = force.value(one_shot=True)
         return (f * d2) / d1
+
+    @staticmethod
+    def surface_ra():
+        rad = radius.one_shot()
+        step_o = inches_per_rev.one_shot()
+        ra = 1e7 * (rad - 0.5 * math.sqrt(4 * rad * rad - 0.159154 * 0.159154 * step_o * step_o))
+        return ra
+
+    @staticmethod
+    def ra_feed():
+        rad = radius.one_shot()
+        ra = surface_ra.one_shot()
+        return (2 * math.sqrt((ra / 1e7) * (2 * rad - ra / 1e7))) / 0.159154
+
+    @staticmethod
+    def ra_corner_radius():
+        ra = surface_ra.one_shot()
+        ipr = inches_per_rev.one_shot()
+        radius.val = (0.159154 * ipr * 0.159154 * ipr + (ra / 1e7) * 4 * (ra / 1e7)) / ((ra / 1e7) * 8)
+        return radius.val
 
     @staticmethod
     def string_to_float():
